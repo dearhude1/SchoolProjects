@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent" android:background="@drawable/background">
+	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		android:orientation="vertical" android:layout_width="90dip"
+		android:layout_height="fill_parent" android:layout_marginLeft="310dip"
+		android:paddingTop="90dip">
+		<Button android:id="@+id/quickgame_button" android:background="@drawable/mnvimagebutton"
+			android:layout_width="fill_parent" android:layout_height="35dip"
+			android:layout_margin="4dip" android:text="@string/quickgame_button"
+			android:textColor="#ffffffff" android:textSize="20sp"
+			android:textStyle="bold" />
+		<Button android:id="@+id/help_button" android:background="@drawable/mnvimagebutton"
+			android:layout_width="fill_parent" android:layout_height="35dip"
+			android:layout_margin="4dip" android:text="@string/help_button"
+			android:textColor="#ffffffff" android:textSize="20sp"
+			android:textStyle="bold" />
+		<Button android:id="@+id/setting_button" android:background="@drawable/mnvimagebutton"
+			android:layout_width="fill_parent" android:layout_height="35dip"
+			android:layout_margin="4dip" android:text="@string/setting_button"
+			android:textColor="#ffffffff" android:textSize="20sp"
+			android:textStyle="bold" />
+		<Button android:id="@+id/quit_button" android:background="@drawable/mnvimagebutton"
+			android:layout_width="fill_parent" android:layout_height="35dip"
+			android:layout_margin="4dip" android:text="@string/quit_button"
+			android:textColor="#ffffffff" android:textSize="20sp"
+			android:textStyle="bold" />
+	</LinearLayout>
+
+</LinearLayout>

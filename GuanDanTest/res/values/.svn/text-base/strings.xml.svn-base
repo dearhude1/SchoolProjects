@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">GuanDan</string>
+	<string name="help_title">游戏帮助</string>
+
+	<string name="quickgame_button">快速游戏</string>
+	<string name="help_button">帮助</string>
+	<string name="setting_button">设置</string>
+	<string name="quit_button">退出</string>
+	<string name="ok_button">确定</string>
+	
+	<string name="sound_button">声音</string>
+	<string name="music_button">音乐</string>
+	<string name="AILevel_text">AI等级</string>
+
+	<string name="pattern_button">花色</string>
+	<string name="point_button">点数</string>
+	<string name="type_button">牌型</string>
+	<string name="begin_button">开始</string>
+	<string name="lead_button">出牌</string>
+	<string name="pass_button">不出</string>
+	<string name="payback_button">回贡</string>
+	<string name="pay_button">进贡</string>
+	<string name="reset_button">重置</string>
+	
+	<string name="playerGrade_txt">本方: %1$d </string>
+	<string name="opponentGrade_txt">对方: %1$d </string>
+	<string name="currentGrade_txt">当前: %1$d </string>
+	
+	<string name="easy_level">简单</string>
+	<string name="normal_level">普通</string>
+	<string name="hard_level">高级</string>
+
+
+	<string name="helptext">“掼蛋”是一种在淮安地区广为流传的扑克游戏，是由地方的扑克牌局
+		“跑的快”和“八十分”发展演化而来。牌局采用四人结对竞赛，输赢升级的方式进行。使牌局更富有娱乐性和刺激性。\n
+		【牌型】两副牌\n
+		四王：又叫“四鬼牌”，是最大的牌。\n\n
+
+		炸弹：八张同数值牌\n
+		七张同数值牌\n
+		六张同数值牌\n
+		五张同数值牌\n
+		四张同数值牌\n
+		注：主牌有两张红桃称为逢人配（任意配，除鬼外可配任何牌），如和8张一起，可变为10张的炸蛋。\n\n
+
+		同花顺：同花的五张牌，最大的为同花10-J-Q-K-A，最小的为A-2-3-4-5。\n\n
+
+		顺子：五张连续单牌,不可超过五张（如：A-2-3-4-5或10-J-Q-K-A）。不包括双王，不分花色。\n\n
+
+		两连对：三对的连续对牌,不可超过3对（如：334455、778899,最大的是AAKKQQ,最小的是AA2233）。不包括双王，不分花色。\n\n
+
+		钢板（三顺）：二个的连续三张牌，不可超过2个（如：333444、444555）。\n\n
+
+		单牌（一手牌）：单个牌。\n\n
+
+		对牌（一手牌）：数值相同的两张牌。\n\n
+
+		三张牌：数值相同的三张牌（如三个10）。\n\n
+
+		三带两：数值相同的三张牌加一对牌。例如：333+44\n\n
+
+
+		【牌型的大小】\n\n
+
+		四王是最大的牌 》 六张和六张以上炸弹 > 同花顺》五张炸弹》四张炸弹》其它牌型；\n\n
+
+		牌的大小顺序（以打10为例）：\n
+		大王，小王，10，A，K，Q，J，9，8，7，6，5，4，3\n
+		如果是三带二，以三只牌大小作为比较；\n\n
+
+		对一般牌型而言，只有当牌型相同和总张数相同的牌，才可比较大小。其中像三带二、三顺等组合牌型，只要比较其牌数最多牌值就行。只有比当前出的牌（场牌）大的牌才能出。\n
+
+
+		【特殊规则和名称】（从2打到A，以打10为例）\n\n
+
+		逢人配（任意组合）：主牌红桃为比如打10,2,3,4,红桃10,6可组成2,3,4,5,6也可以任意组合成除大王，小王外的炸弹以及同花等任意牌型。\n\n
+
+		双下：就是和对家最终为最后两名；\n
+		末游：就是最后一名。\n
+		头家：第一名。\n\n
+
+
+		【亮牌规则】（对家）\n
+		第一轮，抽随机牌，抽中者先出牌。其它轮次发牌，根据结果定出牌：\n
+		如果是双下，两个输方要向两个头家（赢家）分主次进贡一张（除主牌红桃外的）最大的牌，赢家分别还一张任意牌，最未家可先发牌，但如果每人各有一张大王或者一人有两张大王，可抗贡，但赢家先发牌。\n
+		如果是单下（就对门只有一方是最后的输方），末家向赢家进贡一张（除主牌红桃外的）最大的牌，赢家还一张任意牌，最末家可先发牌，但如果有两张大王，可抗贡，但赢家先发牌。\n\n
+
+
+		【升级规则】\n
+		★最先出牌结束者为赢家（头游），最后一个出牌结束的是末游。\n
+		★如果是双下，赢家升3级；\n
+		★如果对手有一家是末游，赢家升2级；\n
+		★如果赢家自己对门是末游，赢家升1级；\n
+		★如果单方３次头家，升1级;４次升2级，以上类推；\n
+		★如果单方3次末游，退一级;４次退2级，以上类推；\n
+		★如果打到A，必须对家都没有末游才可以最终赢得本局。\n\n
+
+
+		【岐义的统一】\n
+		因为涉及3次末游的退级，因此双下各记一次末游，头游拿进贡的最大牌。
+		如果两人三次或四次以上双下，会造成2人同时3下或四下，或出现一人3下和一人四下的情况，只取其退最多的一方退级；如，两人同时3下退一级；两人一人三下和一人四下，取四下退级，退2级,两人同时四下，只取一人四下。\n
+	</string>
+	
+</resources>

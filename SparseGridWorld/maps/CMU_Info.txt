@@ -1,0 +1,9 @@
+Agent Num:2
+
+%initial cell index, goal cell index
+
+%agent 0
+236,207
+
+%agent 1
+207,236

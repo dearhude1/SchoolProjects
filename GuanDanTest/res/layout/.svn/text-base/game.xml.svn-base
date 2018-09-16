@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical">
+
+	<RelativeLayout android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_weight="1">
+
+		<guandan.game.GameView android:id="@+id/gameView"
+			android:layout_width="fill_parent" android:layout_height="fill_parent" />
+		<TextView android:id="@+id/playerGrade_txtView"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:text="@string/playerGrade_txt" android:textSize="16sp" android:shadowRadius="1.2"
+			android:shadowColor="#FFFF00"
+			android:textColor="#FF0000" android:layout_alignParentLeft="true" />
+		<TextView android:id="@+id/opponentGrade_txtView"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:text="@string/opponentGrade_txt" android:layout_below="@id/playerGrade_txtView"
+			android:layout_alignParentLeft="true" android:textSize="16sp" android:shadowRadius="1.2"
+			android:shadowColor="#FFFF00"
+			android:textColor="#00FF00" />
+		<TextView android:id="@+id/currentGrade_txtView"
+			android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:text="@string/currentGrade_txt" android:layout_below="@id/opponentGrade_txtView" android:shadowColor="#FFFF00"
+			android:layout_alignParentLeft="true" android:textSize="16sp" android:hint="true" android:shadowRadius="1.2"
+			android:textColor="#FFFFFF" />
+
+		<Button android:id="@+id/pattern_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentLeft="true" android:layout_marginLeft="20dip"
+			android:layout_marginTop="200dip" android:text="@string/pattern_button"
+			android:textColor="#ffffffff" android:textSize="18sp" />
+		<Button android:id="@+id/point_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentLeft="true" android:layout_marginLeft="20dip"
+			android:layout_marginTop="10dip" android:layout_below="@id/pattern_button"
+			android:text="@string/point_button" android:textColor="#ffffffff"
+			android:textSize="18sp" />
+		<Button android:id="@+id/type_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentLeft="true" android:layout_marginLeft="20dip"
+			android:layout_marginTop="10dip" android:layout_below="@id/point_button"
+			android:text="@string/type_button" android:textColor="#ffffffff"
+			android:textSize="18sp" />
+
+		<Button android:id="@+id/lead_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentRight="true" android:layout_marginRight="20dip"
+			android:layout_marginTop="200dip" android:text="@string/lead_button"
+			android:visibility="invisible" android:textColor="#ffffffff"
+			android:textSize="18sp" />
+		<Button android:id="@+id/begin_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentRight="true" android:layout_marginRight="20dip"
+			android:layout_marginTop="10dip" android:layout_below="@id/lead_button"
+			android:text="@string/begin_button" android:textColor="#ffffffff"
+			android:textSize="18sp" android:visibility="invisible"/>
+		<Button android:id="@+id/pass_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentRight="true" android:layout_marginRight="20dip"
+			android:layout_marginTop="10dip" android:layout_below="@id/lead_button"
+			android:text="@string/pass_button" android:visibility="invisible"
+			android:textColor="#ffffffff" android:textSize="18sp" />
+		<Button android:id="@+id/payback_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentRight="true" android:layout_marginRight="20dip"
+			android:layout_marginTop="10dip" android:layout_below="@id/lead_button"
+			android:text="@string/payback_button" android:visibility="invisible"
+			android:textColor="#ffffffff" android:textSize="18sp" />
+		<Button android:id="@+id/pay_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentRight="true" android:layout_marginRight="20dip"
+			android:layout_marginTop="10dip" android:layout_below="@id/lead_button"
+			android:text="@string/pay_button" android:visibility="invisible"
+			android:textColor="#ffffffff" android:textSize="18sp" />
+		<Button android:id="@+id/reset_button" android:background="@drawable/bvimagebutton"
+			android:layout_width="50dip" android:layout_height="30dip"
+			android:layout_alignParentRight="true" android:layout_marginRight="20dip"
+			android:layout_marginTop="10dip" android:layout_below="@id/pass_button"
+			android:text="@string/reset_button" android:visibility="invisible"
+			android:textColor="#ffffffff" android:textSize="18sp" />
+	</RelativeLayout>
+</LinearLayout>

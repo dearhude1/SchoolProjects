@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="D:/Eclipse/Workspace/TwoAgent_PursuitGame/lib/or124.jar"/>
+	<classpathentry kind="lib" path="lib/cplex.jar"/>
+	<classpathentry kind="lib" path="lib/ILOG.CP.jar"/>
+	<classpathentry kind="output" path=""/>
+</classpath>

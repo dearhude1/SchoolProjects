@@ -1,0 +1,6 @@
+npc0 Bingo
+npc1 Jack
+npc2 Micheal
+npc3 Sara
+npc4 Lily
+npc5 White

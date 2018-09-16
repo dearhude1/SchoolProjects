@@ -1,0 +1,6 @@
+animation_pass animation_pass 1
+animation_invalidpokertype animation_invalidpokertype 1
+animation_matchwarning animation_matchwarning 1
+animation_nullpokerwarning animation_nullpokerwarning 1
+animation_toosmallwarning animation_toosmallwarning 1
+animation_notribute animation_notribute 1

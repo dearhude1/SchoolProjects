@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/4/trunk/GuanDanTest/src/guandan/helper
+END
+Helper.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/helper/Helper.java
+END
+Comparator.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/helper/Comparator.java
+END
+Parser.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/helper/Parser.java
+END
+Sorter.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/helper/Sorter.java
+END

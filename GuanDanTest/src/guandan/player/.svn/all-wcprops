@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/4/trunk/GuanDanTest/src/guandan/player
+END
+Hard_AI_Player.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/player/Hard_AI_Player.java
+END
+AI_Player.java
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/8/trunk/GuanDanTest/src/guandan/player/AI_Player.java
+END
+Easy_AI_Player.java
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/player/Easy_AI_Player.java
+END
+AI_Strategy.java
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/player/AI_Strategy.java
+END
+UserPlayer.java
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/player/UserPlayer.java
+END
+Player.java
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/player/Player.java
+END
+Normal_AI_Player.java
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/5/trunk/GuanDanTest/src/guandan/player/Normal_AI_Player.java
+END

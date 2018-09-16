@@ -1,0 +1,8 @@
+Map Width and Height:5,5
+
+%The type of each cell
+2,2,1,2,2
+2,2,1,2,2
+2,2,3,2,2
+2,2,1,2,2
+2,2,1,2,2

@@ -1,0 +1,21 @@
+BattleView_LeadButton      bv_leadbutton0       bv_leadbutton1
+BattleView_PassButton      bv_passbutton0       bv_passbutton1
+BattleView_ResetButton     bv_resetbutton0      bv_resetbutton1
+BattleView_BeginButton     bv_beginbutton0      bv_beginbutton1
+BattleView_PayButton       bv_paybutton0        bv_paybutton1
+BattleView_PayBackButton   bv_paybackbutton0    bv_paybackbutton1
+BattleView_AsPatternButton bv_aspatternbutton0  bv_aspatternbutton1
+BattleView_AsPointsButton  bv_aspointsbutton0   bv_aspointsbutton1
+BattleView_AsTypeButton    bv_astypebutton0     bv_astypebutton1
+MenuView_CareerButton      mnv_careerbutton0    mnv_careerbutton1
+MenuView_QuickGameButton   mnv_quickgamebutton0 mnv_quickgamebutton1
+MenuView_HelpButton        mnv_helpbutton0      mnv_helpbutton1
+MenuView_SettingButton     mnv_settingbutton0   mnv_settingbutton1
+MenuView_ExitButton        mnv_exitbutton0      mnv_exitbutton1
+CareerView_NewCareerButton cv_newcareerbutton0  cv_newcareerbutton1
+CareerView_ContinueButton  cv_continuebutton0   cv_continuebutton1    cv_continuebutton2
+MyCareerView_ProfileButton mcv_profilebutton0   mcv_profilebutton1
+MyCareerView_BeginButton   mcv_beginbutton0     mcv_beginbutton1      mcv_beginbutton2
+MyCareerView_NextDesktop   mcv_nextdesktop0     mcv_nextdesktop1      mcv_nextdesktop2
+MyCareerView_LastDesktop   mcv_lastdesktop0     mcv_lastdesktop1      mcv_lastdesktop2
+Common_BackButton          cm_backbutton0       cm_backbutton1

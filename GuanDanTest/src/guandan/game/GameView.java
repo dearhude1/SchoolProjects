@@ -1,0 +1,1886 @@
+package guandan.game;
+
+import guandan.audio.AudioManager;
+import guandan.player.Player;
+import guandan.player.UserPlayer;
+import guandan.sprite.AnimationSprite;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Random;
+import java.util.concurrent.locks.ReentrantLock;
+
+import guandan.constants.GameState;
+import guandan.game.GameActivity;
+
+import guandan.constants.*;
+import guandan.helper.*;
+
+import guandan.constants.AIType;
+import guandan.constants.PlayerWarning;
+import guandan.player.Easy_AI_Player;
+import guandan.player.Normal_AI_Player;
+
+import guandan.audio.SoundsName;
+import guandan.constants.Constants;
+
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
+import android.os.Handler;
+import android.os.Message;
+import android.util.AttributeSet;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.GestureDetector.OnGestureListener;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.widget.TextView;
+import android.view.View.OnTouchListener;
+
+public class GameView extends SurfaceView implements SurfaceHolder.Callback,
+		OnGestureListener, OnTouchListener {
+
+	/**
+	 * 对对局界面几个状态的定义
+	 */
+	private static final int STATE_IN_BATTLE = 0;
+	private static final int STATE_INNING_END = 1;
+	private static final int STATE_ROUND_END = 2;
+	private static final int STATE_PLAYER_PAY = 3;
+	private static final int STATE_PLAYER_BACK = 4;
+
+	/**
+	 * 最新添加:等待对局开始状态 这个状态让玩家可以对牌进行观察 界面上显示"开始"按钮 玩家点击"开始"按钮后,一局才开始
+	 */
+	private static final int STATE_WAITING_INNING_BEGIN = 5;
+
+	private static final String ACTIVITY_TAG = "======== bingo debug =========";
+
+	private int viewState;
+
+	public int getViewState() {
+		return viewState;
+	}
+
+	public void setViewState(int viewState) {
+		this.viewState = viewState;
+	}
+
+	private static final int USER_PLAYER_TURN = 3;
+	private int currentTurn;
+
+	/**
+	 * 选中的NPC头像图片，没有用PhotoSprite，直接贴图
+	 */
+	private Bitmap[] npcPhotoBitmaps;
+
+	/**
+	 * NPC头像图片的位置数组
+	 */
+	Point[] npcPhotoPositions;
+
+	// 新增加^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	/**
+	 * 牌局中的108张牌
+	 */
+	private ArrayList<Poker> allPokers;
+
+	public ArrayList<Poker> getAllPokers() {
+		return allPokers;
+	}
+
+	public void setAllPokers(ArrayList<Poker> allPokers) {
+		this.allPokers = allPokers;
+	}
+
+	/**
+	 * 各个玩家最近一圈打出的牌
+	 */
+	private ArrayList<Poker>[] lastPokers;
+
+	public ArrayList<Poker>[] getLastPokers() {
+		return lastPokers;
+	}
+
+	public void setLastPokers(ArrayList<Poker>[] lastPokers) {
+		this.lastPokers = lastPokers;
+	}
+
+	/**
+	 * 当前需要接下的扑克牌
+	 */
+	private ArrayList<Poker> currentPokers;
+
+	public void setCurrentPokers(ArrayList<Poker> currentPokers) {
+		this.currentPokers = currentPokers;
+	}
+
+	/**
+	 * 当前需要别人接下的那个玩家 和currentPokers对应
+	 */
+	private int currentWinner;
+
+	/**
+	 * 一局之中各个玩家的排名
+	 */
+	private int[] orderRecord;
+
+	public void setOrderRecord(int[] orderRecord) {
+		this.orderRecord = orderRecord;
+	}
+
+	/**
+	 * 一局之中排名记录到第几名了
+	 */
+	private int recordIndex;
+
+	/**
+	 * 牌局中的桌布图像
+	 */
+	private Bitmap desktopImage;
+
+	/**
+	 * 牌局中的动画子画面 及其同步锁
+	 */
+	private ArrayList<AnimationSprite> animationSpriteList;
+	private ReentrantLock animationSpriteListLock;
+
+	/**
+	 * 屏幕的高度和宽度
+	 */
+	private int screenWidth;
+	private int screenHeight;
+
+	private ImageLoader imageLoader;
+
+	/**
+	 * add by 刘见康
+	 */
+	private AudioManager audioManager;
+
+	/**
+	 * 存放牌局中的四个玩家对象 该数组元素个数为4 其中最后一个一定是UserPlayer对象,代表用户本身
+	 */
+	private Player[] players;
+	private String[] playerNames;
+	public String[] getPlayerNames() {
+		return playerNames;
+	}
+
+	public void setPlayerNames(String[] playerNames) {
+		this.playerNames = playerNames;
+	}
+
+	private UserPlayer userPlayer;
+
+	/**
+	 * 牌局逻辑相关成员 当前牌局的牌级 玩家一方的牌级 玩家对手一方的牌级
+	 */
+	private int currentGrade;
+	private int playerGrade;
+	private int opponentGrade;
+
+	/**
+	 * add by 胡裕靖 牌局一轮的结果
+	 */
+	private int roundValue;
+
+	/**
+	 * add by 胡裕靖
+	 */
+	private Poker[] tributePokers;
+
+	public Poker[] getTributePokers() {
+		return tributePokers;
+	}
+
+	public void setTributePokers(Poker[] tributePokers) {
+		this.tributePokers = tributePokers;
+	}
+
+	/**
+	 * add by 胡裕靖
+	 */
+	private boolean roundFinished;
+
+	private GestureDetector gd;
+
+	/**
+	 * 新添成员**************************************** 局末结算对话框 轮末结算对话框
+	 */
+	private InningEndDialog inningEndDialog;
+
+	private static final int MESS_INNING_END = 0;
+	private static final int MESS_ROUND_END = 1;
+	private static final int MESS_BEFORE_INNING_BEGIN = 2;
+	private static final int MESS_NEXT_TURN = 3;
+	private Handler mHandler = new Handler() {
+
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MESS_INNING_END:
+				inningEnding();
+				break;
+			case MESS_ROUND_END:
+				roundEnding(roundValue);
+				break;
+			case MESS_BEFORE_INNING_BEGIN: {
+				inningEndDialog.cancel();
+				inningEndDialog = null;
+
+				beforeInningBegin();
+				break;
+			}
+			case MESS_NEXT_TURN: {
+				nextTurn();
+				break;
+			}
+			default:
+				break;
+			}
+		}
+	};
+
+	private SurfaceHolder sfh;
+	private Paint paint;
+	private GameThread gameThread;
+
+	private SharedPreferences setting;
+
+	private GameActivity gameActivity;
+
+	public GameView(Context context, AttributeSet attrs) {
+		super(context, attrs);
+		gameActivity = (GameActivity) context;
+		audioManager = AudioManager.getInstance();
+		sfh = this.getHolder();
+		sfh.addCallback(this);
+		paint = new Paint();
+		paint.setAntiAlias(true);
+		setFocusable(true);
+		setFocusableInTouchMode(true);
+		setting = context.getSharedPreferences("Guandan_Setting",
+				Context.MODE_PRIVATE);
+		this.setOnTouchListener(this);// 将本类绑定触屏监听器
+		gd = new GestureDetector(this);
+		init();
+
+	}
+
+	private void init() {
+		imageLoader = ImageLoader.getInstance();
+		screenWidth = imageLoader.getScreenWidth();
+		screenHeight = imageLoader.getScreenHeight();
+		players = new Player[4];
+
+		animationSpriteList = new ArrayList<AnimationSprite>();
+		animationSpriteListLock = new ReentrantLock(true);
+
+		initPhotoes();
+		
+		
+
+	}
+
+	private void initPhotoes() {
+		/**
+		 * NPC头像图片初始化
+		 */
+		npcPhotoBitmaps = new Bitmap[3];
+		playerNames = new String[4];
+
+		/**
+		 * 为头像设置显示的坐标 注意根据实际屏幕大小换算
+		 */
+		Point player0_Pos = new Point(700, 100);// (630,100);
+		Point player1_Pos = new Point(120, 25);// (150,25);
+		Point player2_Pos = new Point();
+
+		player0_Pos.x = (int) (((float) screenWidth * 700) / ((float) Constants.SCREEN_WIDTH_DEFINED));
+		player0_Pos.y = (int) (((float) screenHeight * 100) / ((float) Constants.SCREEN_HEIGHT_DEFINED));
+		player1_Pos.x = (int) (((float) screenWidth * 140) / ((float) Constants.SCREEN_WIDTH_DEFINED));
+		player1_Pos.y = (int) (((float) screenHeight * 30) / ((float) Constants.SCREEN_HEIGHT_DEFINED));
+		player2_Pos.x = (int) (((float) screenWidth * 30) / ((float) Constants.SCREEN_WIDTH_DEFINED));
+		player2_Pos.y = (int) (((float) screenHeight * 185) / ((float) Constants.SCREEN_HEIGHT_DEFINED));
+
+		npcPhotoPositions = new Point[3];
+		npcPhotoPositions[0] = new Point(player0_Pos.x, player0_Pos.y);
+		npcPhotoPositions[1] = new Point(player1_Pos.x, player1_Pos.y);
+		npcPhotoPositions[2] = new Point(player2_Pos.x, player2_Pos.y);
+
+	}
+
+	public void onDraw(Canvas canvas) {
+		/**
+		 * 绘制流程如下: 1. 最底层是桌布图像 2. 绘制NPC头像,名字,剩余牌数 3. 绘制各个玩家打出的牌 4. 绘制玩家的牌堆
+		 */
+		if (canvas == null)
+			return;
+
+		/**
+		 * 首先绘制桌布图像
+		 */
+		if (desktopImage != null) {
+			canvas.drawBitmap(
+					desktopImage,
+					new Rect(0, 0, desktopImage.getWidth(), desktopImage
+							.getHeight()), new Rect(0, 0, screenWidth,
+							screenHeight), null);
+		}
+
+		/**
+		 * 绘制头像
+		 */
+		for (int i = 0; i < 3; ++i)
+			canvas.drawBitmap(
+					npcPhotoBitmaps[i],
+					new Rect(0, 0, npcPhotoBitmaps[i].getWidth(),
+							npcPhotoBitmaps[i].getHeight()),
+					new Rect(npcPhotoPositions[i].x, npcPhotoPositions[i].y,
+							npcPhotoPositions[i].x
+									+ npcPhotoBitmaps[i].getWidth(),
+							npcPhotoPositions[i].y
+									+ npcPhotoBitmaps[i].getHeight()), null);
+
+		/**
+		 * 绘制剩余牌数
+		 */
+		for (int i = 0; i < 3; ++i)
+			canvas.drawText("还剩: " + players[i].getPokerNum() + "张",
+					npcPhotoPositions[i].x - 15, npcPhotoPositions[i].y + 55,
+					new Paint());
+		/**
+		 * 绘制NPC玩家姓名
+		 */
+		for (int i = 0; i < 3; ++i)
+			canvas.drawText(imageLoader.getSelectedOpponentList().get(i),
+					npcPhotoPositions[i].x + 5, npcPhotoPositions[i].y - 5,
+					new Paint());
+
+		for (int i = 0; i < players.length; i++)
+			players[i].drawPokers(canvas);
+
+		/**
+		 * 绘制动画
+		 */
+		drawAnimations(canvas);
+	}
+
+	private void drawAnimations(Canvas canvas) {
+		animationSpriteListLock.lock();
+
+		for (int i = 0; i < animationSpriteList.size(); i++) {
+			AnimationSprite aniSprite = animationSpriteList.get(i);
+
+			if (aniSprite.isActive())
+				aniSprite.onDraw(canvas);
+		}
+
+		animationSpriteListLock.unlock();
+	}
+
+	public void onPatternClick() {
+		userPlayer.sortPokers(UserPlayer.SORT_POKERS_AS_PATTERN);
+	}
+
+	public void onPointClick() {
+		userPlayer.sortPokers(UserPlayer.SORT_POKERS_AS_POINTS);
+	}
+
+	public void onTypeClick() {
+		userPlayer.sortPokers(UserPlayer.SORT_POKERS_AS_TYPE);
+	}
+
+	public void onBeginClick() {
+		gameActivity.setViews_INVISIBLE(R.id.begin_button);
+		/**
+		 * 开始时才将牌发放到各家手中
+		 */
+		assignTribute();
+
+		/**
+		 * 清空牌局逻辑相关变量
+		 */
+		for (int i = 0; i < orderRecord.length; i++)
+			orderRecord[i] = 0;
+		recordIndex = 0;
+
+		currentPokers = new ArrayList<Poker>();
+		currentWinner = currentTurn;
+		lastPokers[0] = null;
+		lastPokers[1] = null;
+		lastPokers[2] = null;
+		lastPokers[3] = null;
+
+		/**
+		 * 通知各个玩家一局开始了
+		 */
+		for (int i = 0; i < 4; i++) {
+			players[i].inningBegin();
+		}
+
+		/**
+		 * 改变viewState为"对局中"
+		 * 
+		 * 若牌局开始就轮到玩家出牌 还需要相关按钮状态
+		 */
+		viewState = STATE_IN_BATTLE;
+
+		if (currentTurn == USER_PLAYER_TURN) {
+			gameActivity.setViews_VISIBLE(R.id.lead_button);
+			gameActivity.setViews_VISIBLE(R.id.reset_button);
+		}
+	}
+
+	private void assignTribute() {
+		/**
+		 * 首先检查是不是存在进贡回贡
+		 */
+		if (tributePokers == null)
+			return;
+
+		boolean allNull = true;
+		for (int i = 0; i < 4; i++) {
+			if (tributePokers[i] != null) {
+				allNull = false;
+				break;
+			}
+		}
+		if (allNull)
+			return;
+
+		int firstPlayerTurn = orderRecord[0];
+		int secondPlayerTurn = orderRecord[1];
+		int thirdPlayerTurn = orderRecord[2];
+		int lastPlayerTurn = orderRecord[3];
+
+		/**
+		 * 双下 需要比较两张贡的大小 头游拿大的贡
+		 */
+		if (Math.abs(thirdPlayerTurn - lastPlayerTurn) == 2) {
+			if (Comparator.comparePoker(tributePokers[lastPlayerTurn],
+					tributePokers[thirdPlayerTurn], currentGrade) == 1) {
+				players[firstPlayerTurn]
+						.receivePay(tributePokers[lastPlayerTurn]);
+				players[secondPlayerTurn]
+						.receivePay(tributePokers[thirdPlayerTurn]);
+				players[thirdPlayerTurn]
+						.receivePay(tributePokers[secondPlayerTurn]);
+				players[lastPlayerTurn]
+						.receivePay(tributePokers[firstPlayerTurn]);
+			} else {
+				players[firstPlayerTurn]
+						.receivePay(tributePokers[thirdPlayerTurn]);
+				players[secondPlayerTurn]
+						.receivePay(tributePokers[lastPlayerTurn]);
+				players[thirdPlayerTurn]
+						.receivePay(tributePokers[firstPlayerTurn]);
+				players[lastPlayerTurn]
+						.receivePay(tributePokers[secondPlayerTurn]);
+			}
+		}
+		/**
+		 * 单下
+		 */
+		else {
+			players[firstPlayerTurn].receivePay(tributePokers[lastPlayerTurn]);
+			players[lastPlayerTurn].receivePay(tributePokers[firstPlayerTurn]);
+		}
+
+		/**
+		 * 分发完之后
+		 */
+		tributePokers = null;
+	}
+
+	public void onLeadClick() {
+		/**
+		 * 出牌 有关牌局逻辑,比较复杂 步骤如下: 从pkSpriteManager处获得当前弹出的牌 检验弹出的牌是否符合出牌要求
+		 * 要比当前的牌大(一是要可比,二是要大)
+		 * 
+		 * 符合则调用userPlayer函数lead将牌打出 然后调用成员函数someoneLead做通知其他玩家等操作 最后交出出牌权
+		 * 
+		 */
+		int compareResult = 0;
+
+		ArrayList<Poker> poppedPokers = userPlayer.getPoppedPokers();
+		int pokerType = Parser.getPokerType(poppedPokers, currentGrade)[0];
+
+		Log.i("heiheihei poker type", " " + pokerType);
+
+		if (poppedPokers == null || poppedPokers.size() == 0) {
+			// 文字提示,不能出空牌
+			tips(PlayerWarning.NULL_POKER_WARNING);
+		} else if (pokerType == PokerType.INVALID_TYPE) {
+			// 文字提示,无效牌型
+			tips(PlayerWarning.INVALID_POKER_TYPE_WARNING);
+		} else if (currentWinner == USER_PLAYER_TURN) {
+
+			/*
+			 * 
+			 * 当前是轮到玩家发牌
+			 */
+			ArrayList<Poker> playerPokers = userPlayer.lead();
+
+			someoneLead(playerPokers, USER_PLAYER_TURN);
+
+			setRightButtons_INVISIBLE();
+
+			/**
+			 * 牌出完了则调用recordOrder
+			 */
+			if (userPlayer.checkFinished())
+				recordOrder(USER_PLAYER_TURN);
+
+			nextTurn();
+
+		}
+
+		else if ((compareResult = Comparator.comparePokers(poppedPokers,
+				currentPokers, currentGrade)) != 1) {
+			// 文字提示,必须打出比当前大的牌
+
+			if (compareResult == -1) {
+				tips(PlayerWarning.MATCH_WARNING);
+			} else {
+				tips(PlayerWarning.TOO_SMALL_WARNING);
+			}
+
+		} else {
+			ArrayList<Poker> playerPokers = userPlayer.lead();
+
+			someoneLead(playerPokers, USER_PLAYER_TURN);
+
+			setRightButtons_INVISIBLE();
+
+			/**
+			 * 牌出完了则调用recordOrder
+			 */
+			if (userPlayer.checkFinished())
+				recordOrder(USER_PLAYER_TURN);
+
+			nextTurn();
+
+		}
+	}
+
+	private void setRightButtons_INVISIBLE() {
+		gameActivity.setViews_INVISIBLE(R.id.lead_button);
+		gameActivity.setViews_INVISIBLE(R.id.pass_button);
+		gameActivity.setViews_INVISIBLE(R.id.reset_button);
+	}
+
+	private void setRightButtons_VISIBLE() {
+		gameActivity.setViews_VISIBLE(R.id.lead_button);
+		gameActivity.setViews_VISIBLE(R.id.pass_button);
+		gameActivity.setViews_VISIBLE(R.id.reset_button);
+	}
+
+	private void setLeftButtons_INVISIBLE() {
+		gameActivity.setViews_INVISIBLE(R.id.pattern_button);
+		gameActivity.setViews_INVISIBLE(R.id.point_button);
+		gameActivity.setViews_INVISIBLE(R.id.type_button);
+	}
+
+	private void setLeftButtons_VISIBLE() {
+		gameActivity.setViews_VISIBLE(R.id.pattern_button);
+		gameActivity.setViews_VISIBLE(R.id.point_button);
+		gameActivity.setViews_VISIBLE(R.id.type_button);
+	}
+
+	public void onPassClick() {
+		/**
+		 * 不出牌 弹出的牌可以将其弹回 调用someoneLead 并交出出牌权
+		 */
+		userPlayer.resetPokers();
+
+		someoneLead(null, USER_PLAYER_TURN);
+
+		setRightButtons_INVISIBLE();
+
+		nextTurn();
+	}
+
+	public void onPayBackClick() {
+		ArrayList<Poker> poppedPoker = userPlayer.getPoppedPokers();
+
+		if (reasonablePayBack(poppedPoker)) {
+			Poker paidPokers = userPlayer.payBack();
+
+			playerPaid_copy(paidPokers);
+
+			gameActivity.setViews_INVISIBLE(R.id.payback_button);
+			viewState = STATE_WAITING_INNING_BEGIN;
+			gameActivity.setViews_VISIBLE(R.id.begin_button);
+
+		} else {
+			/**
+			 * 给以文字提示??
+			 */
+		}
+	}
+
+	public void onPayClick() {
+		ArrayList<Poker> poppedPoker = userPlayer.getPoppedPokers();
+		if (reasonablePay(poppedPoker)) {
+			Poker paidPokers = userPlayer.payTribute();
+
+			playerPaid_copy(paidPokers);
+
+			gameActivity.setViews_INVISIBLE(R.id.pay_button);
+			viewState = STATE_WAITING_INNING_BEGIN;
+			gameActivity.setViews_VISIBLE(R.id.begin_button);
+		} else {
+			/**
+			 * 给以文字提示??
+			 */
+		}
+	}
+
+	private void playerPaid_copy(Poker paidPoker) {
+		// TODO Auto-generated method stub
+		/**
+		 * 只显示出来即可
+		 */
+
+		if (tributePokers == null)
+			tributePokers = new Poker[4];
+
+		tributePokers[USER_PLAYER_TURN] = paidPoker;
+		userPlayer.Ipaid(paidPoker);
+	}
+
+	public void onResetClick() {
+		/**
+		 * 将牌堆重置即可
+		 */
+		userPlayer.resetPokers();
+	}
+
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		return gd.onTouchEvent(event);
+	}
+
+	public boolean onFling(MotionEvent event1, MotionEvent event2,
+			float velocityX, float velocityY) {
+		userPlayer.onFling(event1, event2, velocityX, velocityY);
+		return true;
+
+	}
+
+	public boolean onTouchEvent(MotionEvent event) {
+		userPlayer.onTouchEvent(event);
+		return true;
+	}
+
+	private void update() {
+		/**
+		 * 更新动画即可
+		 */
+
+		animationSpriteListLock.lock();
+
+		/**
+		 * 删掉已经死掉的动画
+		 */
+		for (int i = 0; i < animationSpriteList.size(); i++) {
+			AnimationSprite aniSprite = animationSpriteList.get(i);
+			if (!aniSprite.isActive()) {
+				animationSpriteList.remove(i);
+				i--;
+			}
+		}
+
+		for (int i = 0; i < animationSpriteList.size(); i++) {
+			animationSpriteList.get(i).update();
+		}
+
+		animationSpriteListLock.unlock();
+	}
+
+	/**
+	 * 对返回键的处理
+	 * 
+	 * Home键,电源键是否该交给GameActivity处理??
+	 * 
+	 * @param keyCode
+	 * @param event
+	 * @return
+	 */
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		return false;
+	}
+
+	protected void nextTurn() {
+		/**
+		 * 1. 一局已经结束时立即退出
+		 */
+		if (isInningEnd())
+			return;
+
+		/**
+		 * 2. 寻找当前的出牌人
+		 */
+		boolean bLoop = true;
+		int turn = currentTurn;
+		while (bLoop) {
+			turn = (turn + 1) % 4;
+
+			// 加这样一句??
+			lastPokers[turn] = null;
+			players[turn].cleanMyDesk();
+
+			if (!players[turn].isFinished()) {
+				bLoop = false;
+
+			}
+
+			/**
+			 * 若已经出完牌了 检查当前currentWinner 若currentWinner是自己
+			 * 表明从自己出完牌后,还没有接下自己的牌,则设置接风
+			 */
+			else if (currentWinner == turn) {
+				currentPokers = null;
+
+				/**
+				 * 对家的次序号即是(currentTurn+2)%4 对家未出完牌,则发牌权轮到对家 否则已经双下,不会到达这里
+				 */
+				if (!players[(turn + 2) % 4].isFinished()) {
+					currentWinner = (turn + 2) % 4;
+					turn = (turn + 2) % 4;
+
+					bLoop = false;
+				}
+			} else {
+				Log.e("next turn", "陷入死循环");
+			}
+		}
+
+		/**
+		 * 3. 如果是发牌的情形
+		 */
+		if (turn == currentWinner) {
+			currentPokers = null;
+		}
+
+		/**
+		 * 4. 轮到玩家出牌则将出牌等按钮显示出来; 轮到AI玩家出牌则调用其itsMyTurn函数进行通知
+		 */
+		currentTurn = turn;
+		// players[currentTurn].itsMyTurn(); //自动打牌加的
+
+		/**
+		 * 调试自动打牌去掉先
+		 */
+		if (turn == USER_PLAYER_TURN) {
+			if (currentWinner == USER_PLAYER_TURN) {
+				// leadButton.setActive(true);
+				// resetButton.setActive(true);
+				gameActivity.setViews_VISIBLE(R.id.lead_button);
+				gameActivity.setViews_VISIBLE(R.id.reset_button);
+			} else {
+				// leadButton.setActive(true);
+				// passButton.setActive(true);
+				// resetButton.setActive(true);
+				
+				setRightButtons_VISIBLE();
+			}
+
+			/**
+			 * 看能否到达这句
+			 */
+			Log.i("next", "wanjia jiefeng");
+		} else {
+			players[currentTurn].itsMyTurn();
+		}
+	}
+
+	private boolean isInningEnd() {
+		for (int i = 0; i < 4; i++) {
+			if (!players[i].isFinished())
+				return false;
+		}
+
+		return true;
+	}
+
+	private boolean reasonablePay(ArrayList<Poker> pokers) {
+		/**
+		 * 进贡必须是除主牌红桃外最大的一张牌
+		 */
+		if (pokers == null || pokers.size() != 1)
+			return false;
+		else {
+			Poker pk = pokers.get(0);
+			if (Helper.isMasterCard(pk, currentGrade))
+				return false;
+			else {
+				Poker maxPoker = userPlayer.maxPoker_ExceptMasterCard();
+				if (Comparator.comparePoker(pk, maxPoker, currentGrade) == 0)
+					return true;
+				else
+					return false;
+			}
+		}
+	}
+
+	private boolean reasonablePayBack(ArrayList<Poker> pokers) {
+		/**
+		 * 回贡的点数必须小于10
+		 */
+		if (pokers == null || pokers.size() != 1)
+			return false;
+		else
+			return true;
+	}
+
+	protected void beforeInningBegin() {
+		/**
+		 * 洗牌
+		 */
+		shuffle();
+
+		/**
+		 * 发牌
+		 */
+		assign();
+
+		/**
+		 * 进行进贡和回贡事宜
+		 */
+		int payState = pay_and_payBack_Copy();
+
+		/**
+		 * 设置出牌次序
+		 */
+		currentTurn = whoFirst();
+
+		/**
+		 * 根据payState的值来设定界面状态
+		 */
+		
+		if (payState == 0) {
+			gameActivity.setViews_VISIBLE(R.id.begin_button);
+			viewState = STATE_WAITING_INNING_BEGIN;
+		} else if (payState == 1) {
+			gameActivity.setViews_VISIBLE(R.id.pay_button);
+			viewState = STATE_PLAYER_PAY;
+		} else {
+			gameActivity.setViews_VISIBLE(R.id.payback_button);
+			viewState = STATE_PLAYER_BACK;
+		}
+		gameActivity.refreshViews(playerGrade, opponentGrade, currentGrade);
+		setLeftButtons_VISIBLE();
+	}
+
+	private int whoFirst() {
+		int turn = 0;
+
+		/**
+		 * 第一局随机确定出牌次序
+		 */
+		if (orderRecord[0] == -1) {
+			Random random = new Random();
+			turn = random.nextInt(4);
+
+		}
+
+		/**
+		 * 否则根据上一局结果来确定
+		 */
+		else {
+			int firstPlayerTurn = orderRecord[0];
+			int secondPlayerTurn = orderRecord[1];
+			int thirdPlayerTurn = orderRecord[2];
+			int lastPlayerTurn = orderRecord[3];
+
+			/**
+			 * 分单下和双下统计 末游的大鬼数
+			 */
+			int oldJokerNum = 0;
+			if (Math.abs(thirdPlayerTurn - lastPlayerTurn) == 2) {
+				oldJokerNum = players[lastPlayerTurn].getPokerNum(
+						PokerPattern.JOKER, PokerPoints.OLD_JOKER);
+				oldJokerNum += players[thirdPlayerTurn].getPokerNum(
+						PokerPattern.JOKER, PokerPoints.OLD_JOKER);
+			} else {
+				oldJokerNum = players[lastPlayerTurn].getPokerNum(
+						PokerPattern.JOKER, PokerPoints.OLD_JOKER);
+			}
+
+			/**
+			 * 若抗贡,则头游先出 否则末游先出
+			 */
+			if (oldJokerNum == 2) {
+				turn = firstPlayerTurn;
+			} else
+				turn = lastPlayerTurn;
+		}
+
+		currentWinner = turn;
+
+		return turn;
+	}
+
+	private int pay_and_payBack_Copy() {
+		/**
+		 * 各个玩家只需要将自己的贡牌给出 先打到桌面上 不先交给对方
+		 */
+		if (orderRecord == null || orderRecord[0] == -1)
+			return 0;
+
+		int firstPlayerTurn = orderRecord[0];
+		int secondPlayerTurn = orderRecord[1];
+		int thirdPlayerTurn = orderRecord[2];
+		int lastPlayerTurn = orderRecord[3];
+
+		int retValue;
+
+		tributePokers = null;
+		tributePokers = new Poker[4];
+
+		if (Math.abs(thirdPlayerTurn - lastPlayerTurn) == 2) {
+			int oldJokerNum = players[lastPlayerTurn].getPokerNum(
+					PokerPattern.JOKER, PokerPoints.OLD_JOKER);
+			oldJokerNum += players[thirdPlayerTurn].getPokerNum(
+					PokerPattern.JOKER, PokerPoints.OLD_JOKER);
+
+			/**
+			 * 考虑抗贡
+			 */
+			if (oldJokerNum == 2) {
+				tips(PlayerWarning.NO_TRIBUTE_WARNNING);
+				retValue = 0;
+			} else {
+				if (firstPlayerTurn == USER_PLAYER_TURN) {
+
+					tributePokers[lastPlayerTurn] = players[lastPlayerTurn]
+							.payTribute();
+					tributePokers[thirdPlayerTurn] = players[thirdPlayerTurn]
+							.payTribute();
+					tributePokers[secondPlayerTurn] = players[secondPlayerTurn]
+							.payBack();
+
+					retValue = -1;
+
+				} else if (secondPlayerTurn == USER_PLAYER_TURN) {
+
+					tributePokers[lastPlayerTurn] = players[lastPlayerTurn]
+							.payTribute();
+					tributePokers[thirdPlayerTurn] = players[thirdPlayerTurn]
+							.payTribute();
+					tributePokers[firstPlayerTurn] = players[firstPlayerTurn]
+							.payBack();
+
+					retValue = -1;
+				} else if (thirdPlayerTurn == USER_PLAYER_TURN) {
+					tributePokers[lastPlayerTurn] = players[lastPlayerTurn]
+							.payTribute();
+					tributePokers[secondPlayerTurn] = players[secondPlayerTurn]
+							.payBack();
+					tributePokers[firstPlayerTurn] = players[firstPlayerTurn]
+							.payBack();
+
+					retValue = 1;
+				} else {
+					tributePokers[thirdPlayerTurn] = players[thirdPlayerTurn]
+							.payTribute();
+					tributePokers[secondPlayerTurn] = players[secondPlayerTurn]
+							.payBack();
+					tributePokers[firstPlayerTurn] = players[firstPlayerTurn]
+							.payBack();
+
+					retValue = 1;
+				}
+			}
+		}
+
+		/**
+		 * 如果是单下
+		 */
+		else {
+			int oldJokerNum = players[lastPlayerTurn].getPokerNum(
+					PokerPattern.JOKER, PokerPoints.OLD_JOKER);
+
+			/**
+			 * 考虑抗贡
+			 */
+			if (oldJokerNum == 2) {
+				tips(PlayerWarning.NO_TRIBUTE_WARNNING);
+				retValue = 0;
+			} else {
+				if (firstPlayerTurn == USER_PLAYER_TURN) {
+					tributePokers[lastPlayerTurn] = players[lastPlayerTurn]
+							.payTribute();
+
+					retValue = -1;
+				} else if (lastPlayerTurn == USER_PLAYER_TURN) {
+					tributePokers[firstPlayerTurn] = players[firstPlayerTurn]
+							.payBack();
+
+					retValue = 1;
+				} else {
+					tributePokers[lastPlayerTurn] = players[lastPlayerTurn]
+							.payTribute();
+					tributePokers[firstPlayerTurn] = players[firstPlayerTurn]
+							.payBack();
+
+					retValue = 0;
+				}
+			}
+		}
+
+		for (int i = 0; i < 3; i++) {
+			if (tributePokers[i] != null)
+				players[i].Ipaid(tributePokers[i]);
+		}
+
+		return retValue;
+	}
+
+	private void assign() {
+
+		/**
+		 * 按照顺序发即可
+		 */
+		ArrayList<Poker>[] assignedPokers = new ArrayList[4];
+		for (int i = 0; i < 4; i++)
+			assignedPokers[i] = new ArrayList<Poker>();
+
+		for (int i = 0; i < allPokers.size(); i++) {
+			assignedPokers[i % 4].add(allPokers.get(i));
+		}
+		allPokers.clear();
+
+		/**
+		 * 调用Player类的pokerAssigned函数 将牌发到各个玩家手中
+		 */
+		for (int i = 0; i < 4; i++)
+			players[i].pokerAssigned(assignedPokers[i]);
+	}
+
+	private void shuffle() {
+		/**
+		 * 如果成员allPokers不是108张牌的话 说明中间哪里出错了 只能重新换一幅新牌
+		 */
+		if (allPokers == null || allPokers.size() != 108) {
+			newPokers();
+		}
+
+		/**
+		 * 洗牌算法: 将牌分为两堆 轮流从两堆中取牌插入,每次随机取1－4张
+		 * 
+		 * 可随机洗1-5次
+		 */
+		Random random = new Random();
+		int times = random.nextInt(6);
+		if (times == 0)
+			times = 1;
+
+		for (int i = 1; i <= times; i++) {
+			ArrayList<Poker> pokerList1 = new ArrayList<Poker>();
+			ArrayList<Poker> pokerList2 = new ArrayList<Poker>();
+			for (int j = 0; j < allPokers.size(); j++) {
+				if (j <= 53)
+					pokerList1.add(allPokers.get(j));
+				else
+					pokerList2.add(allPokers.get(j));
+			}
+			allPokers.clear();
+
+			boolean finished = false;
+			while (!finished) {
+				if (pokerList1.size() == 0 && pokerList2.size() == 0) {
+					finished = true;
+				} else if (pokerList1.size() == 0) {
+					finished = true;
+					allPokers.addAll(pokerList2);
+				} else if (pokerList2.size() == 0) {
+					finished = true;
+					allPokers.addAll(pokerList1);
+				} else {
+					int num1 = random.nextInt(5);
+					int num2 = random.nextInt(5);
+					if (num1 == 0)
+						num1 = 1;
+					if (num2 == 0)
+						num2 = 1;
+
+					while (num1 > 0 && pokerList1.size() > 0) {
+						allPokers.add(pokerList1.remove(0));
+						num1--;
+					}
+					while (num2 > 0 && pokerList2.size() > 0) {
+						allPokers.add(pokerList2.remove(0));
+						num2--;
+					}
+				}
+			}
+		}
+	}
+
+	private void newPokers() {
+		allPokers = new ArrayList<Poker>();
+
+		for (int pattern = PokerPattern.CLUB; pattern <= PokerPattern.SPADE; pattern++) {
+			for (int points = PokerPoints.ACE; points <= PokerPoints.KING; points++) {
+				allPokers.add(new Poker(pattern, points));
+				allPokers.add(new Poker(pattern, points));
+			}
+		}
+
+		/**
+		 * 再加入鬼牌
+		 */
+		allPokers.add(new Poker(PokerPattern.JOKER, PokerPoints.LITTLE_JOKER));
+		allPokers.add(new Poker(PokerPattern.JOKER, PokerPoints.LITTLE_JOKER));
+		allPokers.add(new Poker(PokerPattern.JOKER, PokerPoints.OLD_JOKER));
+		allPokers.add(new Poker(PokerPattern.JOKER, PokerPoints.OLD_JOKER));
+
+	}
+
+	protected void roundEnding(int endValue) {
+		// TODO Auto-generated method stub
+		roundFinished = true;
+
+		roundValue = endValue;
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(gameActivity);
+
+		if (endValue == 1)
+			builder.setTitle("恭喜您,这一轮获胜了");
+		else
+			builder.setTitle("很遗憾,您输掉了这一轮");
+		builder.setCancelable(true);
+		builder.setPositiveButton("再来一轮",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+
+						newRound();
+					}
+				});
+		builder.setNegativeButton("退出牌局",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+						gameActivity.finish();
+					}
+				});
+		builder.show();
+
+		viewState = STATE_ROUND_END;
+	}
+
+	protected void inningEnding() {
+		// TODO Auto-generated method stub
+		setRightButtons_INVISIBLE();
+		setLeftButtons_INVISIBLE();
+
+		for (int i = 0; i < 4; i++)
+			players[i].inningEnd();
+
+		/**
+		 * 先判断是否轮末
+		 * 
+		 * 然后开始升级
+		 */
+		int roundValue = isRoundEnd();
+		if (roundValue != 0) {
+			roundEnding(roundValue);
+		} else {
+			gradeUp();
+			inningEndDialog = new InningEndDialog(gameActivity);
+
+			viewState = STATE_INNING_END;
+		}
+	}
+
+	private void gradeUp() {
+		// TODO Auto-generated method stub
+		int firstPlayerTurn = orderRecord[0];
+		int secondPlayerTurn = orderRecord[1];
+		int thirdPlayerTurn = orderRecord[2];
+		int lastPlayerTurn = orderRecord[3];
+
+		/**
+		 * 如果能够进行gradeUp 说明一轮还没有结束
+		 * 
+		 * 所以升级超过A的仍然要退回A
+		 */
+		/**
+		 * 双下升四级 单下且对家为最末尾升一级 单下且对家不为最末尾升两级
+		 */
+		if (Math.abs(firstPlayerTurn - secondPlayerTurn) == 2) {
+			if (firstPlayerTurn == USER_PLAYER_TURN || firstPlayerTurn == 1)
+				playerGrade += 4;
+			else
+				opponentGrade += 4;
+		} else if (Math.abs(firstPlayerTurn - lastPlayerTurn) == 2) {
+			if (firstPlayerTurn == USER_PLAYER_TURN || firstPlayerTurn == 1)
+				playerGrade += 1;
+			else
+				opponentGrade += 1;
+		} else {
+			if (firstPlayerTurn == USER_PLAYER_TURN || firstPlayerTurn == 1)
+				playerGrade += 2;
+			else
+				opponentGrade += 2;
+		}
+
+		/**
+		 * 升级超过A的退回到A
+		 */
+		if (playerGrade > PokerGrade.ACE)
+			playerGrade = PokerGrade.ACE;
+		if (opponentGrade > PokerGrade.ACE)
+			opponentGrade = PokerGrade.ACE;
+
+		if (orderRecord[0] == USER_PLAYER_TURN || orderRecord[0] == 1)
+			currentGrade = playerGrade;
+		else
+			currentGrade = opponentGrade;
+	}
+
+	private int isRoundEnd() {
+		// TODO Auto-generated method stub
+		/**
+		 * return 0 未结束 1 结束,且获胜 －1 结束,且失利
+		 */
+		/**
+		 * 打自己一方的A时 并且双下才能过关
+		 */
+		int retValue = 0;
+		int firstPlayerTurn = orderRecord[0];
+		int secondPlayerTurn = orderRecord[1];
+		int thirdPlayerTurn = orderRecord[2];
+		int lastPlayerTurn = orderRecord[3];
+
+		if (playerGrade == PokerGrade.ACE && opponentGrade == PokerGrade.ACE) {
+			if ((firstPlayerTurn + secondPlayerTurn) == 4)
+				retValue = 1;
+			else if ((thirdPlayerTurn + lastPlayerTurn) == 4)
+				retValue = -1;
+			else
+				retValue = 0;
+		} else if (playerGrade == PokerGrade.ACE
+				&& currentGrade == PokerGrade.ACE) {
+			if ((firstPlayerTurn + secondPlayerTurn) == 4)
+				retValue = 1;
+			else
+				retValue = 0;
+		} else if (opponentGrade == PokerGrade.ACE
+				&& currentGrade == PokerGrade.ACE) {
+			if ((thirdPlayerTurn + lastPlayerTurn) == 4)
+				retValue = -1;
+			else
+				retValue = 0;
+		} else
+			retValue = 0;
+
+		return retValue;
+	}
+
+	@Override
+	public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void surfaceCreated(SurfaceHolder arg0) {
+		// TODO Auto-generated method stub
+		/**
+		 * 获取桌布
+		 */
+		int desktopID = imageLoader.getDesktopImage(setting
+				.getInt("desktop", 0));
+		desktopImage = imageLoader.getBitmapById(desktopID);
+
+		/**
+		 * 获取NPC头像图片
+		 */
+		for (int i = 0; i < 3; ++i) {
+			playerNames[i] = imageLoader.getSelectedOpponentList().get(i);
+			int resourceID = imageLoader.getPhotoImage(playerNames[i]);
+			npcPhotoBitmaps[i] = imageLoader.getBitmapById(resourceID);
+		}
+		playerNames[3] = "我";
+
+		/**
+		 * 初始化牌局的玩家对象
+		 */
+		for (int i = 0; i < 4; i++)
+			players[i] = null;
+
+		/**
+		 * 获取难度 高级AI还没实现
+		 */
+		int gameLevel = setting.getInt("AILevel", AIType.easy_AI);
+		if (gameLevel == 2)
+			gameLevel = 1;
+		for (int i = 0; i < 3; i++) {
+			if (gameLevel == 0)
+				players[i] = new Easy_AI_Player(this, i, AIType.easy_AI);
+			else if (gameLevel == 1)
+				players[i] = new Normal_AI_Player(this, i, AIType.normal_AI);
+		}
+
+		players[USER_PLAYER_TURN] = new UserPlayer(this, USER_PLAYER_TURN);
+		userPlayer = (UserPlayer) players[USER_PLAYER_TURN];
+
+		/**
+		 * 为一些和牌局逻辑相关的成员开辟空间
+		 */
+		lastPokers = new ArrayList[4];
+		orderRecord = new int[4];
+
+		/**
+		 * 调用成员函数newRound
+		 */
+
+		newRound();
+
+		gameThread = new GameThread();
+		gameThread.setRunning(true);
+		gameThread.start();
+	}
+
+	private void newRound() {
+		roundFinished = false;
+
+		/**
+		 * 一些有关牌局逻辑的准备工作
+		 */
+		playerGrade = PokerGrade.TWO;
+		opponentGrade = PokerGrade.TWO;
+		currentGrade = PokerGrade.TWO;
+		for (int i = 0; i < orderRecord.length; i++)
+			orderRecord[i] = -1;
+
+		/**
+		 * 从新的一局开始新的一轮
+		 */
+		beforeInningBegin();
+
+	}
+
+	@Override
+	public void surfaceDestroyed(SurfaceHolder arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void pause() {
+		AudioManager.stopMusic();
+		gameThread.suspend();
+	}
+
+	public void resume() {
+		AudioManager.startMusic(SoundsName.BATTLEBACK_MUSIC);
+		for(int i=0;i<4;i++){
+			players[i].notify();
+		}
+		gameThread.start();
+	}
+
+	public void stop() throws InterruptedException {
+		AudioManager.stopMusic();
+		for(int i=0;i<4;i++){
+			players[i].wait();
+		}
+		gameThread.stop();
+	}
+
+	public int getCurrentTurn() {
+		return currentTurn;
+	}
+
+	public void setCurrentTurn(int grade) {
+		currentTurn = grade;
+	}
+
+	public ArrayList<Poker> getCurrentPokers() {
+		return currentPokers;
+	}
+
+	public int getCurrentWinner() {
+		return currentWinner;
+	}
+
+	public void setCurrentWinner(int grade) {
+		currentWinner = grade;
+	}
+
+	public int getCurrentGrade() {
+		return currentGrade;
+	}
+
+	public void setCurrentGrade(int grade) {
+		currentGrade = grade;
+	}
+
+	public int getPlayerGrade() {
+		return playerGrade;
+	}
+
+	public void setPlayerGrade(int grade) {
+		playerGrade = grade;
+	}
+
+	public int getOpponentGrade() {
+		return opponentGrade;
+	}
+
+	public void setOpponentGrade(int grade) {
+		opponentGrade = grade;
+	}
+
+	public int[] getOrderRecord() {
+		return orderRecord;
+	}
+
+	public void someoneLead(ArrayList<Poker> pokerList, int index) {
+		/**
+		 * add by 胡裕靖 解决玩家在AI还在打牌时退出的崩溃状况
+		 */
+		if (roundFinished)
+			return;
+
+		if (pokerList == null || pokerList.size() == 0) {
+			/**
+			 * 调用someonePass
+			 */
+			someonePass(index);
+		} else {
+
+			/**
+			 * 将pokerList排个序
+			 * 
+			 * 再传给currentPokers
+			 */
+			int currentType = Parser.getPokerType(pokerList, currentGrade)[0];
+
+			/**
+			 * add by 刘见康
+			 */
+			makeSoundByType(currentType);
+
+			pokerList = Sorter.sortPokers_reverse(pokerList, currentType,
+					currentGrade);
+
+			currentPokers = pokerList;
+
+			currentWinner = index;
+
+			/**
+			 * 回收打出来的牌
+			 */
+			allPokers.addAll(pokerList);
+		}
+
+		for (int i = 0; i < 4; i++) {
+			players[i].someoneLead(pokerList, index);
+		}
+
+		lastPokers[index] = pokerList;
+	}
+	
+	/**
+	 * add by 刘见康
+	 * @param type
+	 */
+	private void makeSoundByType(int type){
+		switch (type) {
+		case PokerType.BOMB:
+			audioManager.startSound(SoundsName.BOMB_SOUND);
+			break;
+		case PokerType.DOUBLE_TRIPLE_STRAIGHT:
+			audioManager.startSound(SoundsName.GANGBAN_SOUND);
+			break;
+		case PokerType.FOUR_JOKER:
+			audioManager.startSound(SoundsName.WANGZHA_SOUND);
+			break;
+		case PokerType.STRAIGHT:
+			audioManager.startSound(SoundsName.SHUNZI_SOUND);
+			break;
+		case PokerType.STRAIGHT_FLUSH:
+			audioManager.startSound(SoundsName.SHUNZI_SOUND);
+			break;
+		case PokerType.TRIPLE:
+			audioManager.startSound(SoundsName.SANGE_SOUND);
+			break;
+		case PokerType.TRIPLE_DOUBLE_STRAIGHT:
+			audioManager.startSound(SoundsName.LIANDUI_SOUND);
+			break;
+		case PokerType.TRIPLE_WITH_DOUBLE:
+			audioManager
+					.startSound(SoundsName.SANDAIYIDUI_SOUND);
+			break;
+		default:
+			return;
+		}
+	}
+
+	private void someonePass(int playerIndex) {
+		/**
+		 * 建立"不出"字样的AnimationSprite 并根据playerIndex设置相应显示区域
+		 */
+		AnimationSprite passAnSprite = new AnimationSprite("animation_pass",
+				false, 15);
+
+		/**
+		 * add by 刘见康
+		 */
+		audioManager.startSound(SoundsName.MAN_BUYAO_SOUND);
+
+		Point spritePos = new Point();
+		if (playerIndex == 0) {
+			spritePos.x = 540;
+			spritePos.y = 102;
+		} else if (playerIndex == 1) {
+			spritePos.x = 360;
+			spritePos.y = 54;
+		} else if (playerIndex == 2) {
+			spritePos.x = 200;
+			spritePos.y = 150;
+		} else {
+			spritePos.x = 400;// 360;
+			spritePos.y = 190;// 150;
+		}
+
+		int realX = (int) (((float) spritePos.x * screenWidth) / ((float) Constants.SCREEN_WIDTH_DEFINED));
+		int realY = (int) (((float) spritePos.y * screenHeight) / ((float) Constants.SCREEN_HEIGHT_DEFINED));
+		spritePos.x = realX - passAnSprite.getWidth() / 2;
+		spritePos.y = realY;
+		passAnSprite.setPos(spritePos);
+
+		/**
+		 * 加入到链表中
+		 */
+		animationSpriteListLock.lock();
+
+		animationSpriteList.add(passAnSprite);
+
+		animationSpriteListLock.unlock();
+	}
+
+	public void recordOrder(int playerIndex) {
+		/**
+		 * add by 胡裕靖 解决玩家在AI还在打牌时退出的崩溃状况
+		 */
+		if (roundFinished || orderRecord == null)
+			return;
+
+		if (playerIndex == USER_PLAYER_TURN) {
+			setLeftButtons_INVISIBLE();
+		}
+
+		orderRecord[recordIndex] = playerIndex;
+
+		recordIndex++;
+
+		/**
+		 * recordIndex为3 或者recordIndex为2且双下时 牌局均结束了
+		 * 
+		 * 否则还未结束 如果是玩家已经打完但是还未结束,询问玩家是否继续观看
+		 */
+		if (recordIndex == 3) {
+			for (int i = 0; i < 4; i++) {
+				if (!players[i].isFinished()) {
+					orderRecord[recordIndex] = i;
+					allPokers.addAll(players[i].IamLast());
+					break;
+				}
+			}
+
+			for (int i = 0; i < 4; i++) {
+				if (players[i].isFinished())
+					Log.i("Finished", "i");
+			}
+
+			/*
+			 * 向Hanlder发送消息 结束这一局
+			 */
+			Message msg = new Message();
+			msg.what = MESS_INNING_END;
+			mHandler.sendMessage(msg);
+		} else if (recordIndex == 2
+				&& (Math.abs(orderRecord[0] - orderRecord[1]) == 2)) {
+			int record[] = new int[2];
+			int pokerNum[] = new int[2];
+			int count = 0;
+			for (int i = 0; i < 4; i++) {
+				if (!players[i].isFinished()) {
+					record[count] = i;
+					ArrayList<Poker> pokersLeft = players[i].IamLast();
+					pokerNum[count] = pokersLeft.size();
+					count++;
+					allPokers.addAll(pokersLeft);
+				}
+			}
+
+			if (pokerNum[0] > pokerNum[1]) {
+				orderRecord[recordIndex] = record[1];
+				recordIndex++;
+				orderRecord[recordIndex] = record[0];
+			} else {
+				orderRecord[recordIndex] = record[0];
+				recordIndex++;
+				orderRecord[recordIndex] = record[1];
+			}
+
+			// debug
+			for (int i = 0; i < 4; i++) {
+				if (players[i].isFinished())
+					Log.i("Finished", "i");
+			}
+
+			Message msg = new Message();
+			msg.what = MESS_INNING_END;
+			mHandler.sendMessage(msg);
+		} else {
+			/**
+			 * 玩家已经出完牌 且牌局还没有结束时
+			 * 
+			 * 询问玩家是否还要继续?
+			 */
+		}
+	}
+
+	public void receiveMessage_NextTurn() {
+		// TODO Auto-generated method stub
+		/**
+		 * add by 胡裕靖 解决玩家在AI还在打牌时退出的崩溃状况
+		 */
+		if (roundFinished)
+			return;
+
+		Message msg = new Message();
+		msg.what = MESS_NEXT_TURN;
+		mHandler.sendMessage(msg);
+	}
+
+	public int[] getPlayerPokerNum() {
+		// TODO Auto-generated method stub
+		int[] playerPokerNums = new int[4];
+
+		for (int i = 0; i < 4; i++) {
+			playerPokerNums[i] = players[i].getPokerNum();
+		}
+
+		return playerPokerNums;
+	}
+
+	/**
+	 * 玩家对牌操作不当时 给出提示
+	 * 
+	 * @param type
+	 *            0:对无效牌型给以提示 1：对出空牌给以提示 2:对牌型不符给以提示 3:对牌太小给以提示
+	 */
+	private void tips(int type) {
+		AnimationSprite warningSprite = null;
+
+		switch (type) {
+		case PlayerWarning.INVALID_POKER_TYPE_WARNING:
+			warningSprite = new AnimationSprite("animation_invalidpokertype",
+					false, 15);
+			break;
+		case PlayerWarning.NULL_POKER_WARNING:
+			warningSprite = new AnimationSprite("animation_nullpokerwarning",
+					false, 15);
+			break;
+		case PlayerWarning.MATCH_WARNING:
+			warningSprite = new AnimationSprite("animation_matchwarning",
+					false, 15);
+			break;
+		case PlayerWarning.TOO_SMALL_WARNING:
+			warningSprite = new AnimationSprite("animation_toosmallwarning",
+					false, 15);
+			break;
+		case PlayerWarning.NO_TRIBUTE_WARNNING:
+			warningSprite = new AnimationSprite("animation_notribute", false,
+					15);
+			break;
+
+		default:
+			break;
+		}
+
+		if (warningSprite == null)
+			return;
+
+		int posX = (int) (((float) 400 * screenWidth) / ((float) Constants.SCREEN_WIDTH_DEFINED));
+		int posY = (int) (((float) 190 * screenHeight) / ((float) Constants.SCREEN_HEIGHT_DEFINED));
+		posX = posX - warningSprite.getWidth() / 2;
+
+		/**
+		 * 抗贡提示语放正中间
+		 */
+		if (type == PlayerWarning.NO_TRIBUTE_WARNNING) {
+			posY = (int) (((float) 240 * screenHeight) / ((float) Constants.SCREEN_HEIGHT_DEFINED));
+			posY -= warningSprite.getHeight() / 2;
+		}
+
+		warningSprite.setPos(posX, posY);
+
+		animationSpriteListLock.lock();
+
+		animationSpriteList.add(warningSprite);
+
+		animationSpriteListLock.unlock();
+
+	}
+
+	public void gameRender() {
+		Canvas canvas;
+		canvas = null;
+		try {
+			/**
+			 * 先从gameView中获取画布对象canvas 然后在画布对象上绘制画面
+			 */
+			canvas = sfh.lockCanvas(null);
+			synchronized (sfh) {
+				onDraw(canvas);
+			}
+		} finally {
+			if (canvas != null)
+				sfh.unlockCanvasAndPost(canvas);
+		}
+	}
+
+	private class InningEndDialog extends Dialog {
+
+		public InningEndDialog(Context context) {
+			super(context);
+
+			/**
+			 * add by 刘见康
+			 */
+			AudioManager.musicOff();
+
+			this.setTitle("局末结算");
+			TextView textView = new TextView(context);
+			String resultString = new String("");
+			resultString += "头游:" + playerNames[orderRecord[0]] + "\n";
+			resultString += "次游:" + playerNames[orderRecord[1]] + "\n";
+			resultString += "三游:" + playerNames[orderRecord[2]] + "\n";
+			resultString += "末游:" + playerNames[orderRecord[3]];
+			textView.setText(resultString);
+
+			/**
+			 * add by 刘见康
+			 */
+			if (playerNames[orderRecord[0]] == "我")
+				audioManager.startSound(SoundsName.WIN_SOUND);
+			else if (playerNames[orderRecord[3]] == "我")
+				audioManager.startSound(SoundsName.LOSE_SOUND);
+
+			this.setContentView(textView);
+			this.show();
+		}
+
+		public boolean onTouchEvent(MotionEvent event) {
+
+			int eventType = event.getAction();
+
+			/**
+			 * 发生触屏释放事件(意味着必定按下了) 则开始新的一局
+			 * 
+			 * 结算窗口消失
+			 */
+			if (eventType == MotionEvent.ACTION_UP) {
+				Message msg = new Message();
+				msg.what = MESS_BEFORE_INNING_BEGIN;
+				mHandler.sendMessage(msg);
+			}
+
+			/**
+			 * add by 刘见康
+			 */
+			AudioManager.musicOn();
+			return true;
+		}
+	}
+
+	private class GameThread extends Thread {
+
+		private boolean running = false;
+
+		public void setRunning(boolean run) {
+			running = run;
+		}
+
+		public void run() {
+			while (running) {
+
+				update();
+				gameRender();
+
+				/**
+				 * 每刷新一帧休眠20ms 若不计绘制时间,1s内可以刷新50帧
+				 */
+				try {
+					Thread.sleep(20);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	@Override
+	public boolean onDown(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void onLongPress(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public boolean onScroll(MotionEvent arg0, MotionEvent arg1, float arg2,
+			float arg3) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void onShowPress(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public boolean onSingleTapUp(MotionEvent arg0) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public LinkedList<Poker> getPlayerPokers(int index) {
+		if (index < 0 || index > 3)
+			return null;
+		else
+			return players[index].getPokers();
+
+	}
+	public GameActivity getGameActivity()
+	{
+		return gameActivity;
+	}
+}

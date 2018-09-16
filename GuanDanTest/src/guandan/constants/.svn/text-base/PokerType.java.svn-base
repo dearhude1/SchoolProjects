@@ -1,0 +1,30 @@
+/**
+ * PokerType.java
+ * @author 胡裕靖
+ * March 23rd 2011
+ * 
+ * PokerType类,对掼蛋各种牌型的定义
+ * 包括:
+ * 单张
+ * 对子
+ * 三张
+ * 三带二
+ * 
+ */
+package guandan.constants;
+
+public class PokerType {
+
+	public static final int INVALID_TYPE = -1;
+	public static final int SINGLE = 0; // 单牌
+	public static final int DOUBLE = 1; // 对子
+	public static final int TRIPLE = 2; // 三张
+	public static final int TRIPLE_DOUBLE_STRAIGHT = 3; // 三连对
+	public static final int DOUBLE_TRIPLE_STRAIGHT = 4; // 钢板
+	public static final int TRIPLE_WITH_DOUBLE = 5; // 三带一对
+	public static final int STRAIGHT = 6; // 五张牌顺子
+	public static final int STRAIGHT_FLUSH = 7; // 同花顺
+	public static final int BOMB = 8; // 四张极其以上的炸弹
+	public static final int FOUR_JOKER = 9; // 四王牌
+
+}

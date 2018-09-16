@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:background="@drawable/background_setting" android:id="@+id/container"
+	android:layout_gravity="bottom">
+	<LinearLayout android:id="@+id/settingViewsGroup"
+		android:layout_width="fill_parent" android:layout_height="fill_parent">
+		<LinearLayout android:layout_width="100dip"
+			android:layout_height="wrap_content" android:orientation="vertical"
+			android:layout_gravity="left" android:paddingTop="70dip"
+			android:paddingLeft="15dip">
+			<TextView android:text="@string/AILevel_text" android:id="@+id/ai_level"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textSize="20sp" android:layout_marginTop="50dip" />
+			<RadioGroup android:id="@+id/AILevel_Group"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:orientation="vertical" android:checkedButton="@+id/easy">
+				<RadioButton android:id="@id/easy" android:text="@string/easy_level" />
+				<RadioButton android:id="@+id/normal" android:text="@string/normal_level" />
+				<RadioButton android:id="@+id/hard" android:text="@string/hard_level" />
+			</RadioGroup>
+
+		</LinearLayout>
+		<LinearLayout android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:orientation="horizontal"
+			android:layout_gravity="center" android:paddingTop="110dip" android:layout_margin="10dip">
+			<Button android:id="@+id/lastdesktop_button"
+				android:background="@drawable/mcv_lastdesktop" android:layout_width="40dip"
+				android:layout_height="40dip" android:layout_marginTop="40dip" />
+			<ImageView android:id="@+id/desktop_iv"
+				android:layout_width="200dip" android:layout_height="120dip"
+				android:background="@drawable/desktop1" android:layout_margin="5dip" />
+			<Button android:id="@+id/nextdesktop_button"
+				android:background="@drawable/mcv_nextdesktop" android:layout_width="40dip"
+				android:layout_height="40dip" android:layout_marginTop="40dip" />
+		</LinearLayout>
+		<LinearLayout android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:orientation="vertical"
+			android:layout_gravity="right" android:paddingTop="70dip">
+			<TextView android:text="@string/music_button"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textSize="18sp" android:layout_marginLeft="10dip"/>
+			<ToggleButton android:id="@+id/music_button"
+				android:layout_width="wrap_content" android:layout_height="wrap_content" />
+			<TextView android:text="@string/sound_button" android:layout_marginLeft="10dip"
+				android:layout_width="wrap_content" android:layout_height="wrap_content"
+				android:textSize="18sp" />
+			<ToggleButton android:id="@+id/sound_button"
+				android:layout_width="wrap_content" android:layout_height="wrap_content" />
+			<Button android:id="@+id/cmback_button" android:background="@drawable/cm_backimagebutton"
+				android:layout_width="40dip" android:layout_height="40dip"
+				android:layout_marginTop="8dip" android:layout_marginLeft="10dip"/>
+		</LinearLayout>
+
+
+	</LinearLayout>
+	<ImageView android:id="@+id/desktop_preview"
+		android:layout_width="fill_parent" android:layout_height="fill_parent"
+		android:visibility="gone" />
+</FrameLayout>
